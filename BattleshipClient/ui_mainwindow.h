@@ -35,6 +35,13 @@ public:
     QPushButton *btnSignUp;
     QLineEdit *edtUsername;
     QPushButton *btnSignIn;
+    QWidget *signupPage;
+    QLabel *label_6;
+    QLineEdit *setUsername;
+    QPushButton *btnReturn;
+    QPushButton *btnSignUp_2;
+    QLabel *label_7;
+    QLineEdit *setPassword;
     QWidget *mainPage;
     QPushButton *btnSignOut;
     QPushButton *btnGetUsers;
@@ -66,6 +73,16 @@ public:
     QPushButton *btnPrev;
     QPushButton *btnNext;
     QLabel *txtReplayStatus;
+    QWidget *botPage;
+    QLabel *label_16;
+    QLabel *label_17;
+    QLabel *txtEnemyBot;
+    QPushButton *btnBotOk;
+    QLabel *txtStatusBot;
+    QPushButton *btnExitBot;
+    QGraphicsView *myViewBot;
+    QGraphicsView *botView;
+    QLabel *txtMeBot;
 
     void setupUi(QMainWindow *MainWindow)
     {
@@ -105,6 +122,32 @@ public:
         btnSignIn->setObjectName(QString::fromUtf8("btnSignIn"));
         btnSignIn->setGeometry(QRect(400, 220, 220, 30));
         stackedWidget->addWidget(loginPage);
+        signupPage = new QWidget();
+        signupPage->setObjectName(QString::fromUtf8("signupPage"));
+        label_6 = new QLabel(signupPage);
+        label_6->setObjectName(QString::fromUtf8("label_6"));
+        label_6->setGeometry(QRect(360, 120, 80, 30));
+        label_6->setFont(font);
+        setUsername = new QLineEdit(signupPage);
+        setUsername->setObjectName(QString::fromUtf8("setUsername"));
+        setUsername->setGeometry(QRect(440, 120, 220, 30));
+        setUsername->setFont(font);
+        btnReturn = new QPushButton(signupPage);
+        btnReturn->setObjectName(QString::fromUtf8("btnReturn"));
+        btnReturn->setGeometry(QRect(400, 270, 220, 30));
+        btnSignUp_2 = new QPushButton(signupPage);
+        btnSignUp_2->setObjectName(QString::fromUtf8("btnSignUp_2"));
+        btnSignUp_2->setGeometry(QRect(400, 220, 220, 30));
+        label_7 = new QLabel(signupPage);
+        label_7->setObjectName(QString::fromUtf8("label_7"));
+        label_7->setGeometry(QRect(360, 170, 80, 30));
+        label_7->setFont(font);
+        setPassword = new QLineEdit(signupPage);
+        setPassword->setObjectName(QString::fromUtf8("setPassword"));
+        setPassword->setGeometry(QRect(440, 170, 220, 30));
+        setPassword->setFont(font);
+        setPassword->setEchoMode(QLineEdit::Password);
+        stackedWidget->addWidget(signupPage);
         mainPage = new QWidget();
         mainPage->setObjectName(QString::fromUtf8("mainPage"));
         btnSignOut = new QPushButton(mainPage);
@@ -125,6 +168,7 @@ public:
         QFont font1;
         font1.setPointSize(10);
         font1.setBold(true);
+        font1.setWeight(75);
         label_5->setFont(font1);
         label_5->setStyleSheet(QString::fromUtf8("color: red;"));
         label_5->setAlignment(Qt::AlignCenter);
@@ -164,6 +208,7 @@ public:
         QFont font2;
         font2.setPointSize(11);
         font2.setBold(true);
+        font2.setWeight(75);
         label_3->setFont(font2);
         label_3->setStyleSheet(QString::fromUtf8("color: green;"));
         label_3->setAlignment(Qt::AlignCenter);
@@ -245,6 +290,51 @@ public:
         txtReplayStatus->setStyleSheet(QString::fromUtf8("color: blue;"));
         txtReplayStatus->setAlignment(Qt::AlignCenter);
         stackedWidget->addWidget(replayPage);
+        botPage = new QWidget();
+        botPage->setObjectName(QString::fromUtf8("botPage"));
+        label_16 = new QLabel(botPage);
+        label_16->setObjectName(QString::fromUtf8("label_16"));
+        label_16->setGeometry(QRect(30, 50, 380, 30));
+        label_16->setFont(font2);
+        label_16->setStyleSheet(QString::fromUtf8("color: green;"));
+        label_16->setAlignment(Qt::AlignCenter);
+        label_17 = new QLabel(botPage);
+        label_17->setObjectName(QString::fromUtf8("label_17"));
+        label_17->setGeometry(QRect(690, 50, 380, 30));
+        label_17->setFont(font2);
+        label_17->setStyleSheet(QString::fromUtf8("color: red;"));
+        label_17->setAlignment(Qt::AlignCenter);
+        txtEnemyBot = new QLabel(botPage);
+        txtEnemyBot->setObjectName(QString::fromUtf8("txtEnemyBot"));
+        txtEnemyBot->setGeometry(QRect(690, 480, 380, 30));
+        txtEnemyBot->setFont(font);
+        txtEnemyBot->setStyleSheet(QString::fromUtf8("color: red;"));
+        txtEnemyBot->setAlignment(Qt::AlignCenter);
+        btnBotOk = new QPushButton(botPage);
+        btnBotOk->setObjectName(QString::fromUtf8("btnBotOk"));
+        btnBotOk->setGeometry(QRect(460, 90, 180, 30));
+        txtStatusBot = new QLabel(botPage);
+        txtStatusBot->setObjectName(QString::fromUtf8("txtStatusBot"));
+        txtStatusBot->setGeometry(QRect(250, 20, 600, 30));
+        txtStatusBot->setFont(font3);
+        txtStatusBot->setStyleSheet(QString::fromUtf8("color: blue;"));
+        txtStatusBot->setAlignment(Qt::AlignCenter);
+        btnExitBot = new QPushButton(botPage);
+        btnExitBot->setObjectName(QString::fromUtf8("btnExitBot"));
+        btnExitBot->setGeometry(QRect(460, 440, 180, 30));
+        myViewBot = new QGraphicsView(botPage);
+        myViewBot->setObjectName(QString::fromUtf8("myViewBot"));
+        myViewBot->setGeometry(QRect(30, 90, 380, 380));
+        botView = new QGraphicsView(botPage);
+        botView->setObjectName(QString::fromUtf8("botView"));
+        botView->setGeometry(QRect(690, 90, 380, 380));
+        txtMeBot = new QLabel(botPage);
+        txtMeBot->setObjectName(QString::fromUtf8("txtMeBot"));
+        txtMeBot->setGeometry(QRect(30, 480, 380, 30));
+        txtMeBot->setFont(font);
+        txtMeBot->setStyleSheet(QString::fromUtf8("color: green;"));
+        txtMeBot->setAlignment(Qt::AlignCenter);
+        stackedWidget->addWidget(botPage);
         MainWindow->setCentralWidget(centralwidget);
         QWidget::setTabOrder(edtUsername, edtPassword);
         QWidget::setTabOrder(edtPassword, btnSignIn);
@@ -254,8 +344,9 @@ public:
 
         retranslateUi(MainWindow);
 
-        stackedWidget->setCurrentIndex(0);
+        stackedWidget->setCurrentIndex(1);
         btnSignIn->setDefault(true);
+        btnSignUp_2->setDefault(true);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -269,6 +360,11 @@ public:
         label->setText(QCoreApplication::translate("MainWindow", "Username:", nullptr));
         btnSignUp->setText(QCoreApplication::translate("MainWindow", "Sign Up", nullptr));
         btnSignIn->setText(QCoreApplication::translate("MainWindow", "Sign In", nullptr));
+        label_6->setText(QCoreApplication::translate("MainWindow", "Username:", nullptr));
+        btnReturn->setText(QCoreApplication::translate("MainWindow", "Return", nullptr));
+        btnSignUp_2->setText(QCoreApplication::translate("MainWindow", "Sign Up", nullptr));
+        label_7->setText(QCoreApplication::translate("MainWindow", "Password:", nullptr));
+        setPassword->setInputMask(QString());
         btnSignOut->setText(QCoreApplication::translate("MainWindow", "Sign Out", nullptr));
         btnGetUsers->setText(QCoreApplication::translate("MainWindow", "Refresh", nullptr));
         label_5->setText(QCoreApplication::translate("MainWindow", "History", nullptr));
@@ -289,6 +385,13 @@ public:
         btnPrev->setText(QCoreApplication::translate("MainWindow", "Prev", nullptr));
         btnNext->setText(QCoreApplication::translate("MainWindow", "Next", nullptr));
         txtReplayStatus->setText(QCoreApplication::translate("MainWindow", "Replay status", nullptr));
+        label_16->setText(QCoreApplication::translate("MainWindow", "Your board", nullptr));
+        label_17->setText(QCoreApplication::translate("MainWindow", "Enemy board", nullptr));
+        txtEnemyBot->setText(QCoreApplication::translate("MainWindow", "TextLabel", nullptr));
+        btnBotOk->setText(QCoreApplication::translate("MainWindow", "OK", nullptr));
+        txtStatusBot->setText(QCoreApplication::translate("MainWindow", "Status", nullptr));
+        btnExitBot->setText(QCoreApplication::translate("MainWindow", "Surrender", nullptr));
+        txtMeBot->setText(QCoreApplication::translate("MainWindow", "TextLabel", nullptr));
     } // retranslateUi
 
 };

@@ -292,58 +292,34 @@ int checkGameOver(const Match &match)
 
 
 
-void updateElo(User user,Match &match,int winner)
+void updateElo(User &user, Match &match, int winner) {
+    for (auto &client : clients) {
+        if (strcmp(user.username, client.second.username) == 0) {
+            int eloDifference = abs(match.point1 - match.point2);
+            int eloChange;
 
-{
+            if (match.winner == winner) {
+                // Winner logic: Gain more ELO for beating a higher-ranked player
+                eloChange = eloDifference < 10 ? 10 : (eloDifference / 2) + 10;
+                client.second.elo += eloChange;
+            } else {
+                // Loser logic: Lose more ELO if higher-ranked, less if lower-ranked
+                eloChange = eloDifference < 10 ? 5 : (eloDifference / 2) + 5;
+                client.second.elo -= eloChange;
 
-    for (auto &client : clients)
-
-    {
-
-        if (strcmp(user.username, client.second.username) == 0)
-
-        {
-
-            if (match.winner == winner)
-
-                client.second.elo += 10;
-
-            else if (client.second.elo != 0){
-
-                client.second.elo -= 10;
-
-            }else if (client.second.elo == 0) {
-
-                if(winner==0) match.point1 = 0;
-
-                else match.point2 = 0;
-
+                // Prevent ELO from going below zero
+                if (client.second.elo < 0) client.second.elo = 0;
             }
-
-            if (updateUser(client.second) == SQLITE_OK)
-
-            {
-
-                cout << "> sendQuit(): update user success" << endl;
-
-            }
-
-            else
-
-            {
-
-                cout << "> sendQuit(): update user failed" << endl;
-
-            }
-
+            // Update the database
+            if (updateUser(client.second) == SQLITE_OK) {
+                cout << "> updateElo(): ELO updated successfully for user " << client.second.username << endl;
+            } else {
+                cout << "> updateElo(): Failed to update ELO for user " << client.second.username << endl;
+            }        
             break;
-
         }
-
     }
-
 }
-
 
 
 void sendGameOver(User user, Match &match, int winner)
@@ -2230,9 +2206,15 @@ void handleSurrender(int clientFd, Request request)
 
 
 
-    updateElo(match.player1 , match, 0);
-
-    updateElo(match.player2 , match, 1);
+    if (match.winner == 0) {
+        // Player 1 wins
+        updateElo(match.player1, match, 0);
+        updateElo(match.player2, match, 1);
+    } else if (match.winner == 1) {
+        // Player 2 wins
+        updateElo(match.player2, match, 1);
+        updateElo(match.player1, match, 0);
+    }
 
     packageSize = packageSize + sizeof(match);
 
@@ -2454,66 +2436,55 @@ void handleChat(int clientFd, Request request)
 
 
 
-void handleQuickMatch(int clientFd, Request request)
+void handleQuickMatch(int clientFd, Request request) {
+    auto it = clients.find(clientFd);
+    if (it == clients.end()) return;
 
-{
+    User &currentUser = it->second;
+    int closestEloDiff = INT_MAX;
+    int bestMatchFd = -1;
 
-    unordered_map<int, User>::iterator it = clients.find(clientFd);
-
-    waitings.insert({it->first, it->second});
-
-    int elo = it->second.elo;
-
-    for (const auto &client : waitings)
-
-    {
-
-        int client_elo = client.second.elo;
-
-        if (client.first != clientFd && client_elo >= elo - 10 && client_elo <= elo + 10)
-
-        {
-
-            request.user2 = client.second;
-
-            handleChallenge(clientFd, request);
-
-            request.user2 = request.user;
-
-            request.user = client.second;
-
-            handleAccept(client.first, request);
-
-            waitings.erase(clientFd);
-
-            waitings.erase(client.first);
-
-            Response response;
-
-            response.type = request.type;
-
-            response.status = Status::STATUS_OK;
-
-            strcpy(response.message, "Quick match sucessfully");
-
-
-
-            size_t packageSize = sizeof(size_t) + sizeof(response);
-
-            send(clientFd, &packageSize, sizeof(packageSize), 0);
-
-            send(clientFd, &response, sizeof(response), 0);
-
-            send(client.first, &packageSize, sizeof(packageSize), 0);
-
-            send(client.first, &response, sizeof(response), 0);
-
-            break;
-
+    // Find the closest match in terms of ELO
+    for (const auto &waiting : waitings) {
+        if (waiting.first != clientFd) {
+            int eloDiff = abs(waiting.second.elo - currentUser.elo);
+            if (eloDiff < closestEloDiff) {
+                closestEloDiff = eloDiff;
+                bestMatchFd = waiting.first;
+            }
         }
-
     }
 
+    if (bestMatchFd != -1) {
+        // Found a match
+        request.user2 = waitings[bestMatchFd];
+        handleChallenge(clientFd, request);
+
+        request.user2 = currentUser;
+        request.user = waitings[bestMatchFd];
+        handleAccept(bestMatchFd, request);
+
+        waitings.erase(clientFd);
+        waitings.erase(bestMatchFd);
+
+        Response response;
+        response.type = request.type;
+        response.status = Status::STATUS_OK;
+        strcpy(response.message, "Quick match successfully found!");
+
+        size_t packageSize = sizeof(size_t) + sizeof(response);
+        send(clientFd, &packageSize, sizeof(packageSize), 0);
+        send(clientFd, &response, sizeof(response), 0);
+        send(bestMatchFd, &packageSize, sizeof(packageSize), 0);
+        send(bestMatchFd, &response, sizeof(response), 0);
+
+        cout << clientFd << "> handleQuickMatch(): Match created between "
+             << currentUser.username << " and " << waitings[bestMatchFd].username << endl;
+    } else {
+        // No match found
+        waitings.insert({clientFd, currentUser});
+        cout << clientFd << "> handleQuickMatch(): Added to waiting queue." << endl;
+    }
 }
 
 
@@ -2536,6 +2507,72 @@ void handleCancel(int clientFd, Request request)
 
     }
 
+}
+
+void handlePlayWithBots(int clientFd, Request request) {
+    // Step 1: Initialize the match
+    Match botMatch;
+    botMatch.player1 = request.user; // Player
+    strcpy(botMatch.player2.username, "BOT"); // AI Bot
+    botMatch.status1 = 0; // Player not ready
+    botMatch.status2 = 1; // Bot always ready
+    botMatch.turn = 0;    // Player starts first
+    botMatch.winner = -1;
+
+    // Initialize both boards
+    memset(botMatch.board1, CELL_EMPTY, sizeof(botMatch.board1));
+    memset(botMatch.board2, CELL_EMPTY, sizeof(botMatch.board2));
+
+    // Step 2: Randomly place ships for the bot
+    random_device rd;
+    mt19937 rng(rd());
+    uniform_int_distribution<int> dist(0, BOARD_SIZE - 1);
+
+    for (int i = 0; i < 5; i++) {
+        int size = i == 0 ? 2 : (i <= 2 ? 3 : (i == 3 ? 4 : 5));
+        bool placed = false;
+
+        while (!placed) {
+            int row = dist(rng);
+            int col = dist(rng);
+            bool horizontal = dist(rng) % 2;
+
+            placed = true;
+            for (int j = 0; j < size; j++) {
+                int r = row + (horizontal ? 0 : j);
+                int c = col + (horizontal ? j : 0);
+
+                if (r >= BOARD_SIZE || c >= BOARD_SIZE || botMatch.board2[r][c] != CELL_EMPTY) {
+                    placed = false;
+                    break;
+                }
+            }
+
+            if (placed) {
+                for (int j = 0; j < size; j++) {
+                    int r = row + (horizontal ? 0 : j);
+                    int c = col + (horizontal ? j : 0);
+                    botMatch.board2[r][c] = CELL_SHIP;
+                }
+            }
+        }
+    }
+
+    // Step 3: Save the match and send response
+    matches.push_back(botMatch);
+    moves.push_back(vector<Move>()); // Store moves
+
+    Response response;
+    response.type = REQUEST_PLAY_WITH_BOTS;
+    response.status = STATUS_OK;
+    strcpy(response.message, "Match setup with BOT completed!");
+
+    size_t packageSize = sizeof(size_t) + sizeof(response) + sizeof(botMatch);
+    send(clientFd, &packageSize, sizeof(packageSize), 0);
+    send(clientFd, &response, sizeof(response), 0);
+    send(clientFd, &botMatch, sizeof(botMatch), 0);
+
+    cout << clientFd << "> handlePlayWithBots(): Match created against bot" << endl;
 }
 
 
@@ -2799,6 +2836,12 @@ int main()
                     case REQUEST_CANCEL:
 
                         handleCancel(clientsFd[i], request);
+
+                        break;
+
+                    case REQUEST_PLAY_WITH_BOTS:
+
+                        handlePlayWithBots(clientsFd[i], request);
 
                         break;
 

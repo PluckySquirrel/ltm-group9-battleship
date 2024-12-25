@@ -86,6 +86,7 @@ enum RequestType {
     REQUEST_CHAT,
     REQUEST_QUICK_MATCH,
     REQUEST_CANCEL,
+    REQUEST_PLAY_WITH_BOTS
 };
 
 enum Status {

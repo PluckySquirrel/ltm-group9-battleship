@@ -33,6 +33,7 @@ private slots:
     void updateListWidgetHistory(Match math);
     void shipPlaced();
     void shot(int row, int col);
+    void botShot(int row, int col);
     void shotDone(int current, int size);
     void showReplayPage(Match match, QList<Move> moves);
 
@@ -60,6 +61,7 @@ private slots:
     void handleGetRank(const Response& response, QByteArray& bytes);
     void handleChat(const Response& response, QByteArray& bytes);
     void handleQuickMatch(const Response& response, QByteArray& bytes);
+    void handlePlayWithBots(const Response& response, QByteArray& bytes);
 
 private:
     Ui::MainWindow* ui;
